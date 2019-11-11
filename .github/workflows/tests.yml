@@ -1,0 +1,27 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  build:
+    name: Tests on PHP ${{ matrix.php-version }}
+    strategy:
+      max-parallel: 2
+      matrix:
+        php-version: [ 7.2, 7.3 ]
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@master
+        with:
+          php-version: '{{ matrix.php-version }}'
+          extension-csv: xdebug
+
+      - name: Verify coding standards
+        run: make cs-test
+
+      - name: Run unit tests and verify coverage
+        run: make coverage

@@ -1,0 +1,29 @@
+{
+    "name": "alexandresalome/php-editor",
+    "description": "Manipulation library for PHP",
+    "type": "library",
+
+    "license": "MIT",
+
+    "autoload": {
+        "psr-4": {
+            "PhpEditor\\": "src/"
+        }
+    },
+
+    "autoload-dev": {
+        "psr-4": {
+            "PhpEditor\\Tests\\": "tests/"
+        }
+    },
+
+    "require": {
+        "php": "^7.2"
+    },
+
+    "require-dev": {
+        "symfony/debug": "^4.3",
+        "symfony/var-dumper": "^4.3",
+        "phpunit/phpunit": "^8.4"
+    }
+}
