@@ -18,6 +18,11 @@ class File
     private $namespace;
 
     /**
+     * @var Uses
+     */
+    private $uses;
+
+    /**
      * @param Tokens|null $tokens a list of tokens
      */
     private function __construct(?Tokens $tokens = null)
@@ -26,43 +31,49 @@ class File
 
         $this->ensureMonolithic();
         $this->namespace = new Namespace_($this);
+        $this->uses = new Uses($this);
     }
 
+    /**
+     * Creates an empty file.
+     */
     public static function create(): File
     {
         return new File();
     }
 
+    /**
+     * Creates from a PHP sourcecode string.
+     */
     public static function createFromSource(string $source): File
     {
         return new self(Tokens::createFromSource($source));
     }
 
+    /**
+     * Creates from an existing file.
+     */
     public static function createFromFile(string $file): File
     {
         return new self(Tokens::createFromFile($file));
     }
 
+    /**
+     * Writes the model to a file.
+     */
     public function saveToFile(string $file)
     {
         file_put_contents($file, $this->getSource());
     }
 
-    public function hasNamespace(): bool
+    public function getNamespace(): Namespace_
     {
-        return $this->namespace->exists();
+        return $this->namespace;
     }
 
-    public function getNamespace(): ?string
+    public function getUses(): Uses
     {
-        return $this->namespace->getName();
-    }
-
-    public function setNamespace(string $namespaceName): File
-    {
-        $this->namespace->setName($namespaceName);
-
-        return $this;
+        return $this->uses;
     }
 
     public function getSource(): string
@@ -79,6 +90,9 @@ class File
         return $this->tokens[0];
     }
 
+    /**
+     * @internal
+     */
     public function getTokens(): Tokens
     {
         return $this->tokens;

@@ -233,7 +233,7 @@ class TokensTest extends TestCase
         $this->assertEquals('"bar"', $texts[1]->getValue());
     }
 
-    public function testTokensInsertAfter()
+    public function testInsertCodeAfter()
     {
         $tokens = Tokens::createFromSource('<?php echo "foo";');
         $foo = $tokens[3];
@@ -241,6 +241,17 @@ class TokensTest extends TestCase
 
         $this->assertCount(7, $tokens);
         $this->assertEquals('<?php echo "foo"."bar";', $tokens->getSource());
+        $this->assertChained($tokens);
+    }
+
+    public function testInsertCodeBefore()
+    {
+        $tokens = Tokens::createFromSource('<?php echo "foo";');
+        $foo = $tokens[3];
+        $tokens->insertCodeBefore($foo, '"bar".');
+
+        $this->assertCount(7, $tokens);
+        $this->assertEquals('<?php echo "bar"."foo";', $tokens->getSource());
         $this->assertChained($tokens);
     }
 
@@ -271,6 +282,30 @@ class TokensTest extends TestCase
         $tokens->push(new Token(T_CONSTANT_ENCAPSED_STRING, '"Foo"'));
 
         $this->assertEquals('echo "Foo"', $tokens->getSource());
+        $this->assertChained($tokens);
+    }
+
+    public function testRemoveIntervalMiddle()
+    {
+        $tokens = Tokens::createFromSource('echo "Hello "."world";', false);
+        $tokens->removeInterval($tokens[3], $tokens[4]);
+        $this->assertEquals('echo "Hello ";', $tokens->getSource());
+        $this->assertChained($tokens);
+    }
+
+    public function testRemoveIntervalBegin()
+    {
+        $tokens = Tokens::createFromSource('echo "Hello "."world";', false);
+        $tokens->removeInterval($tokens[0], $tokens[3]);
+        $this->assertEquals('"world";', $tokens->getSource());
+        $this->assertChained($tokens);
+    }
+
+    public function testRemoveIntervalEnd()
+    {
+        $tokens = Tokens::createFromSource('echo "Hello "."world";', false);
+        $tokens->removeInterval($tokens[3], $tokens[5]);
+        $this->assertEquals('echo "Hello "', $tokens->getSource());
         $this->assertChained($tokens);
     }
 

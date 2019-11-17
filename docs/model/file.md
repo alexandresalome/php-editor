@@ -6,26 +6,32 @@ The ``File`` class is the main entry point of the library.
 **Methods**:
 
 - [Constructor](#constructor)
-- [File::createFromFile](#file-create-from-file)
+- [File::create](#file-create)
+- [File::createFromFile](#file-createfromfile)
+- [File::createFromSource](#file-createfromsource)
+- [saveToFile](#savetofile)
 
-Constructor
------------
+File::create
+------------
 
 **Signature**
 
-> ``__construct(?Tokens $tokens = null)``
+> ``File::create(): File``
 
 **Description**
 
-You can instantiate this object without argument:
+Creates an empty file.
 
-```php
-use PHPEditor\File;
+File::createFromSource
+----------------------
 
-$file = new File();
-```
+**Signature**
 
-This will create an empty file.
+> ``File::createFromSource(string $source): File``
+
+**Description**
+
+Creates from a PHP sourcecode string.
 
 File::createFromFile
 --------------------
@@ -34,9 +40,17 @@ File::createFromFile
 
 > ``File::createFromFile(string $filePath): File``
 
-File::createFromSource
-----------------------
+**Description**
+
+Creates from an existing file.
+
+saveToFile
+----------
 
 **Signature**
 
-> ``File::createFromSource(string $source): File``
+> ``$file->saveToFile(string $file)``
+
+**Description**
+
+Writes the model to a file.

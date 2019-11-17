@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    name: Tests on PHP ${{ matrix.php-version }}
+    name: PHP ${{ matrix.php-version }}
     strategy:
       max-parallel: 2
       matrix:

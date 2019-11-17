@@ -35,7 +35,8 @@ $file->saveToFile('/path/to/file_modified.php');
 Documentation
 -------------
 
-- [Documentation of the model](doc/model.md)
+- [Usage manual](doc/usage.md)
+- [Model reference](doc/model.md)
 - [Changelog](CHANGELOG.md)
 
 Limitations
@@ -43,5 +44,6 @@ Limitations
 
 This library has some limitations for now:
 
-- Only works for monolithic PHP files (starts with `<?php`, no ending tag)
-- Only works for PHP files with zero or one namespace defined
+- Only monolithic PHP files (starts with `<?php`, no ending tag)
+- Only PHP files with zero or one namespace defined
+- Does not support multi-use syntax (`use Namespace\{Foo, Bar, Baz}`)

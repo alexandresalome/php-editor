@@ -3,6 +3,8 @@
 namespace PhpEditor\Tests;
 
 use PhpEditor\File;
+use PhpEditor\Namespace_;
+use PhpEditor\Uses;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -77,5 +79,17 @@ class FileTest extends TestCase
         $this->expectExceptionMessage('Only monolithic files are supported (starting with <?php, no close tag).');
 
         $file = File::createFromSource('Hello <?php echo "world"; ?>');
+    }
+
+    public function testGetNamespace()
+    {
+        $file = File::create();
+        $this->assertInstanceOf(Namespace_::class, $file->getNamespace());
+    }
+
+    public function testGetUses()
+    {
+        $file = File::create();
+        $this->assertInstanceOf(Uses::class, $file->getUses());
     }
 }

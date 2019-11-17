@@ -53,6 +53,12 @@ class TokenTest extends TestCase
         $this->assertEquals('TYPE_CONCAT', $token->getTypeName());
     }
 
+    public function testGetTypeNameFromInteger()
+    {
+        $this->assertEquals('T_ECHO', Token::getTypeNameFromInteger(T_ECHO));
+        $this->assertEquals('T_ECHO, or T_NS_SEPARATOR', Token::getTypeNameFromInteger([T_ECHO, T_NS_SEPARATOR]));
+    }
+
     public function testSetValue()
     {
         $token = new Token(T_STRING, 'Foo');
@@ -111,6 +117,26 @@ class TokenTest extends TestCase
         $this->expectExceptionMessage('Expected token type to be T_ECHO, got end of file.');
 
         $actual = $token->getNext(T_ECHO);
+    }
+
+    public function testIsNext()
+    {
+        $token = new Token(T_STRING, 'Foo');
+        $next = new Token(T_STRING, 'Bar');
+        $token->setNext($next);
+
+        $this->assertTrue($token->isNext(T_STRING));
+        $this->assertTrue($token->isNext([T_STRING, T_USE]));
+        $this->assertFalse($token->isNext(T_ECHO));
+        $this->assertFalse($token->isNext([T_ECHO, T_USE]));
+    }
+
+    public function testIsNextWithNoNext()
+    {
+        $token = new Token(T_STRING, 'Foo');
+
+        $this->assertFalse($token->isNext(T_STRING));
+        $this->assertFalse($token->isNext([T_ECHO, T_USE]));
     }
 
     public function testCustomTypes()

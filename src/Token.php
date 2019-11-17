@@ -4,23 +4,27 @@ namespace PhpEditor;
 
 /**
  * PHP token representation.
- *
- * @internal
  */
 class Token
 {
     const NAME_OF_TYPES = [
         self::TYPE_CONCAT => 'TYPE_CONCAT',
         self::TYPE_ENDING_SEMICOLON => 'TYPE_ENDING_SEMICOLON',
+        self::TYPE_BRACKET_OPENING => 'TYPE_BRACKET_OPENING',
+        self::TYPE_BRACKET_CLOSING => 'TYPE_BRACKET_CLOSING',
     ];
 
     const VALUE_OF_TYPES = [
         self::TYPE_CONCAT => '.',
         self::TYPE_ENDING_SEMICOLON => ';',
+        self::TYPE_BRACKET_OPENING => '{',
+        self::TYPE_BRACKET_CLOSING => '}',
     ];
 
     const TYPE_CONCAT = 1000;
     const TYPE_ENDING_SEMICOLON = 1001;
+    const TYPE_BRACKET_OPENING = 1002;
+    const TYPE_BRACKET_CLOSING = 1003;
 
     /**
      * Token type.
@@ -123,8 +127,12 @@ class Token
     /**
      * Returns the token type name.
      */
-    public static function getTypeNameFromInteger(int $type): string
+    public static function getTypeNameFromInteger($type): string
     {
+        if (is_array($type)) {
+            return implode(', or ', array_map(Token::class.'::getTypeNameFromInteger', $type));
+        }
+
         if ($type < 1000) {
             return token_name($type);
         }
@@ -153,13 +161,29 @@ class Token
     /**
      * Asserts the token has given type.
      *
+     * @param int|int[] $type
+     *
      * @throws \InvalidArgumentException Token has a different type
      */
-    public function ensureType(int $type): void
+    public function ensureType($type): Token
     {
-        if ($this->type !== $type) {
+        if (!$this->isType($type)) {
             throw new \InvalidArgumentException(sprintf('Expected token type to be %s, got %s.', self::getTypeNameFromInteger($type), self::getTypeNameFromInteger($this->type)));
         }
+
+        return $this;
+    }
+
+    /**
+     * Tests if the token has given type.
+     *
+     * @param int|int[] $type
+     */
+    public function isType($type): bool
+    {
+        $type = is_array($type) ? $type : [$type];
+
+        return in_array($this->type, $type, true);
     }
 
     /**
@@ -181,16 +205,26 @@ class Token
     /**
      * Returns the next token, or null if it's the last in list.
      */
-    public function getNext(?int $type = null): ?Token
+    public function getNext($type = null): ?Token
     {
         $next = $this->next;
         if (null !== $type && $next) {
             $next->ensureType($type);
         } elseif (null !== $type) {
-            throw new \InvalidArgumentException(sprintf('Expected token type to be %s, got end of file.', self::getTypeNameFromInteger($type)));
+            throw new \InvalidArgumentException(sprintf('Expected token type to be %s, got end of file.', Token::getTypeNameFromInteger($type)));
         }
 
         return $next;
+    }
+
+    /**
+     * Tests if the next token is of a given type.
+     *
+     * @param int|int[] $type
+     */
+    public function isNext($type): bool
+    {
+        return $this->next ? $this->next->isType($type) : false;
     }
 
     /**

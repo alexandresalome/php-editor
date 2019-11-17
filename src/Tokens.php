@@ -244,6 +244,12 @@ class Tokens implements \Countable, \ArrayAccess, \IteratorAggregate
         $this->insertTokensAfter($token, $tokens);
     }
 
+    public function insertCodeBefore(?Token $token, string $string)
+    {
+        $tokens = Tokens::createFromSource($string, false);
+        $this->insertTokensBefore($token, $tokens);
+    }
+
     /**
      * Inserts a list of tokens after a specific token.
      */
@@ -251,6 +257,35 @@ class Tokens implements \Countable, \ArrayAccess, \IteratorAggregate
     {
         $offset = $this->getTokenOffset($token);
         $this->insertTokensAt($offset + 1, $tokens);
+    }
+
+    /**
+     * Inserts a list of tokens before a specific token.
+     */
+    public function insertTokensBefore(Token $token, Tokens $tokens): void
+    {
+        $offset = $this->getTokenOffset($token);
+        $this->insertTokensAt($offset, $tokens);
+    }
+
+    public function removeInterval(Token $begin, Token $end)
+    {
+        $offsetBegin = $this->getTokenOffset($begin);
+        $offsetEnd = $this->getTokenOffset($end);
+        $before = $begin->getPrevious();
+        $after = $end->getNext();
+
+        if ($before) {
+            $before->setNext($after);
+        }
+        if ($after) {
+            $after->setPrevious($before);
+        }
+
+        $this->tokens = array_merge(
+            array_values(array_slice($this->tokens, 0, $offsetBegin)),
+            array_values(array_slice($this->tokens, $offsetEnd + 1))
+        );
     }
 
     public function insertTokensAt(int $offset, Tokens $tokens): void
