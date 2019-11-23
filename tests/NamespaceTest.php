@@ -13,26 +13,26 @@ class NamespaceTest extends TestCase
     public function testGetNamespace()
     {
         $file = File::createFromSource('<?php namespace Foo;');
-        $this->assertEquals('Foo', $file->getNamespace()->getName());
+        $this->assertEquals('Foo', $file->getNamespace()->get());
     }
 
     public function testGetNamespaceFromEmptyFile()
     {
         $file = File::createFromSource('<?php ');
-        $this->assertNull($file->getNamespace()->getName());
+        $this->assertNull($file->getNamespace()->get());
     }
 
     public function testSetNamespace()
     {
         $file = File::createFromSource('<?php namespace Foo;');
-        $file->getNamespace()->setName('Bar\Baz');
+        $file->getNamespace()->set('Bar\Baz');
         $this->assertEquals('<?php namespace Bar\Baz;', $file->getSource());
     }
 
     public function testSetNamespaceEmptyFile()
     {
         $file = File::create();
-        $file->getNamespace()->setName('Bar\Baz');
+        $file->getNamespace()->set('Bar\Baz');
         $this->assertEquals("<?php\n\nnamespace Bar\Baz;\n", $file->getSource());
     }
 

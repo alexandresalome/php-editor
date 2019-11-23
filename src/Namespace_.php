@@ -20,7 +20,7 @@ class Namespace_
         return null !== $this->getNamespaceToken();
     }
 
-    public function getName(): ?string
+    public function get(): ?string
     {
         $token = $this->getNamespaceToken();
 
@@ -29,13 +29,12 @@ class Namespace_
         }
 
         return $token
-            ->getNext(T_WHITESPACE)
-            ->getNext(T_STRING)
+            ->getNextNotEmpty(T_STRING)
             ->getValue()
         ;
     }
 
-    public function setName(string $name): void
+    public function set(string $name): void
     {
         $token = $this->getNamespaceToken();
 
@@ -47,8 +46,7 @@ class Namespace_
         }
 
         $token
-            ->getNext(T_WHITESPACE)
-            ->getNext(T_STRING)
+            ->getNextNotEmpty(T_STRING)
             ->setValue($name)
         ;
     }

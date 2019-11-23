@@ -2,6 +2,7 @@
 
 namespace PhpEditor\Tests;
 
+use PhpEditor\Classes;
 use PhpEditor\File;
 use PhpEditor\Namespace_;
 use PhpEditor\Uses;
@@ -91,5 +92,29 @@ class FileTest extends TestCase
     {
         $file = File::create();
         $this->assertInstanceOf(Uses::class, $file->getUses());
+    }
+
+    public function testGetClasses()
+    {
+        $file = File::create();
+        $this->assertInstanceOf(Classes::class, $file->getClasses());
+    }
+
+    public function testGetClassOneClass()
+    {
+        $file = File::createFromSource('<?php class Foo {}');
+        $class = $file->getClass();
+
+        $this->assertEquals('Foo', $class->getName());
+    }
+
+    public function testGetClassNoClass()
+    {
+        $file = File::createFromSource('<?php ');
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Expected exactly one definition, got 0.');
+
+        $file->getClass();
     }
 }
