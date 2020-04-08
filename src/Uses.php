@@ -80,13 +80,15 @@ class Uses
         $namespace = $this->file->getTokens()->getAllByType(T_NAMESPACE);
         $after = '';
         if (count($namespace)) {
-            $token = $namespace[0]->getNext(T_WHITESPACE)->getNext();
-            while ($token->isType([T_STRING, T_NS_SEPARATOR])) {
-                $token = $token->getNext(Token::TYPE_ENDING_SEMICOLON)->getNext();
-                if ("\n\n" === $token->getValue()) {
-                    $token->setValue("\n");
-                    $after = "\n";
-                }
+            $token = $namespace[0]->getNextNotEmpty();
+            while (!$token->isType(Token::TYPE_ENDING_SEMICOLON)) {
+                $token = $token->getNextNotEmpty();
+            }
+
+            $token = $token->getNext();
+            if ("\n\n" === $token->getValue()) {
+                $token->setValue("\n");
+                $after = "\n";
             }
         } else {
             $token = $this->file->getOrCreateOpening();
@@ -154,7 +156,7 @@ class Uses
     private function readClassNameAndAlias(Token $token): array
     {
         // move cursor to beginning of the class
-        $token = $token->ensureType(T_USE)->getNext(T_WHITESPACE)->getNext();
+        $token = $token->ensureType(T_USE)->getNextNotEmpty();
 
         // Read classname
         $className = '';
@@ -208,7 +210,7 @@ class Uses
 
     private function setAliasFromToken(Token $token, ?string $alias): void
     {
-        $token = $token->ensureType(T_USE)->getNext(T_WHITESPACE)->getNext();
+        $token = $token->ensureType(T_USE)->getNextNotEmpty();
 
         // Read classname
         $className = '';
@@ -226,10 +228,7 @@ class Uses
         // Change "as ..."
         if ($token->isType(T_AS) && null !== $alias) {
             /** @var Token $token */
-            $token = $token
-                ->getNext(T_WHITESPACE)
-                ->getNext(T_STRING)
-            ;
+            $token = $token->getNextNotEmpty(T_STRING);
             $token->setValue($alias);
 
             return;
@@ -237,7 +236,7 @@ class Uses
 
         // Remove "as ..."
         if ($token->isType(T_AS) && null === $alias) {
-            $end = $token->getNext(T_WHITESPACE)->getNext(T_STRING);
+            $end = $token->getNextNotEmpty(T_STRING);
             $this->file->getTokens()->removeInterval($token->getPrevious(), $end);
 
             return;

@@ -27,12 +27,12 @@ if ($file->getNamespace()->exists()) {
 Read the file namespace
 -----------------------
 
-Access the current namespace by calling the `getName()` method on the `Namespace_` object:
+Access the current namespace by calling the `get()` method on the `Namespace_` object:
 
 ```php
 <?php
 
-$namespace = $file->getNamespace()->getName();
+$namespace = $file->getNamespace()->get();
 
 if ($namespace === null) {
     echo "No namespace found\n";
@@ -41,16 +41,16 @@ if ($namespace === null) {
 }
 ```
 
-`getNamespace()->getName()` can return **null**, if no namespace is defined in the file. Otherwise, this method returns
+`getNamespace()->get()` can return **null**, if no namespace is defined in the file. Otherwise, this method returns
 a string containing the file namespace.
 
 Change the file namespace
 -------------------------
 
-To modify the file namespace, use the `setName()` method on the `Namespace_` object:
+To modify the file namespace, use the `set()` method on the `Namespace_` object:
 
 ```php
 <?php
 
-$file->getNamespace()->setName('Acme\Project');
+$file->getNamespace()->set('Acme\Project');
 ```

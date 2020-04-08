@@ -23,6 +23,11 @@ class File
     private $uses;
 
     /**
+     * @var Classes
+     */
+    private $classes;
+
+    /**
      * @param Tokens|null $tokens a list of tokens
      */
     private function __construct(?Tokens $tokens = null)
@@ -31,6 +36,7 @@ class File
 
         $this->ensureMonolithic();
         $this->namespace = new Namespace_($this);
+        $this->classes = new Classes($this);
         $this->uses = new Uses($this);
     }
 
@@ -109,5 +115,21 @@ class File
         if (T_OPEN_TAG !== $token->getType() || count($this->tokens->getAllByType(T_CLOSE_TAG))) {
             throw new \RuntimeException('Only monolithic files are supported (starting with <?php, no close tag).');
         }
+    }
+
+    public function getClasses(): Classes
+    {
+        return $this->classes;
+    }
+
+    public function getClass(): Class_
+    {
+        $classes = iterator_to_array($this->classes);
+
+        if (1 !== count($classes)) {
+            throw new \LogicException(sprintf('Expected exactly one definition, got %d.', count($classes)));
+        }
+
+        return $classes[0];
     }
 }

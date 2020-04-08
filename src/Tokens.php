@@ -226,12 +226,16 @@ class Tokens implements \Countable, \ArrayAccess, \IteratorAggregate
     /**
      * Returns all tokens of a given type.
      *
+     * @param int|int[] $type
+     *
      * @return Token[]
      */
-    public function getAllByType(int $type): array
+    public function getAllByType($type): array
     {
-        return array_values(array_filter($this->tokens, function (Token $token) use ($type) {
-            return $token->getType() === $type;
+        $types = is_array($type) ? $type : [$type];
+
+        return array_values(array_filter($this->tokens, function (Token $token) use ($types) {
+            return in_array($token->getType(), $types, true);
         }));
     }
 

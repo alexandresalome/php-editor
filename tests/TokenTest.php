@@ -3,6 +3,7 @@
 namespace PhpEditor\Tests;
 
 use PhpEditor\Token;
+use PhpEditor\Tokens;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -86,6 +87,38 @@ class TokenTest extends TestCase
         $this->assertSame($next, $token->getNext());
     }
 
+    public function testGetPrevious()
+    {
+        $token = new Token(T_STRING, 'Bar');
+        $previous = new Token(T_STRING, 'Foo');
+        $token->setPrevious($previous);
+
+        $this->assertSame($previous, $token->getPrevious());
+        $this->assertSame($previous, $token->getPrevious(T_STRING));
+        $this->assertSame($previous, $token->getPrevious([T_ECHO, T_STRING]));
+    }
+
+    public function testGetPreviousTypeEndOfFile()
+    {
+        $token = new Token(T_STRING, 'Foo');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected token type to be T_ECHO, got end of file.');
+
+        $token->getPrevious(T_ECHO);
+    }
+
+    public function testGetPreviousInvalidType()
+    {
+        $token = new Token(T_STRING, 'Bar');
+        $previous = new Token(T_STRING, 'Foo');
+        $token->setPrevious($previous);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected token type to be T_ECHO, got T_STRING.');
+
+        $token->getPrevious(T_ECHO);
+    }
+
     public function testGetNextWithCorrectType()
     {
         $token = new Token(T_STRING, 'Foo');
@@ -150,5 +183,79 @@ class TokenTest extends TestCase
                 $this->assertArrayHasKey($constant, Token::VALUE_OF_TYPES);
             }
         }
+    }
+
+    public function testGetPreviousNotEmpty()
+    {
+        $tokens = Tokens::createFromSource("<?php /** hello */\n\n/** world */     \n    class Foo {}");
+        $class = $tokens[5];
+
+        $previous = $class->getPreviousNotEmpty();
+        $this->assertInstanceOf(Token::class, $previous);
+        $this->assertEquals(T_OPEN_TAG, $previous->getType());
+    }
+
+    public function testGetPreviousNotEmptyInvalidType()
+    {
+        $tokens = Tokens::createFromSource("<?php /** hello */\n\n/** world */     \n    class Foo {}");
+        $class = $tokens[5];
+
+        $previous = $class->getPreviousNotEmpty(T_OPEN_TAG);
+        $this->assertInstanceOf(Token::class, $previous);
+        $this->assertEquals(T_OPEN_TAG, $previous->getType());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected token type to be T_ABSTRACT, got T_OPEN_TAG.');
+        $class->getPreviousNotEmpty(T_ABSTRACT);
+    }
+
+    public function testGetPreviousBeginningOfFile()
+    {
+        $tokens = Tokens::createFromSource("/** hello */\n\n/** world */     \n    class Foo {}", false);
+        $class = $tokens[4];
+
+        $previous = $class->getPreviousNotEmpty();
+        $this->assertNull($previous);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected token type to be T_ECHO, got beginning of file.');
+        $class->getPreviousNotEmpty(T_ECHO);
+    }
+
+    public function testGetNextNotEmpty()
+    {
+        $tokens = Tokens::createFromSource("<?php /** hello */\n\n/** world */     \n    class Foo {}");
+        $begin = $tokens[0];
+
+        $next = $begin->getNextNotEmpty();
+        $this->assertInstanceOf(Token::class, $next);
+        $this->assertEquals(T_CLASS, $next->getType());
+    }
+
+    public function testGetNextNotEmptyInvalidType()
+    {
+        $tokens = Tokens::createFromSource("<?php /** hello */\n\n/** world */     \n    class Foo {}");
+        $begin = $tokens[0];
+
+        $next = $begin->getNextNotEmpty(T_CLASS);
+        $this->assertInstanceOf(Token::class, $next);
+        $this->assertEquals(T_CLASS, $next->getType());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected token type to be T_ABSTRACT, got T_CLASS.');
+        $begin->getNextNotEmpty(T_ABSTRACT);
+    }
+
+    public function testGetNextEndOfFile()
+    {
+        $tokens = Tokens::createFromSource("/** hello */\n\n/** world */     \n    ", false);
+        $begin = $tokens[0];
+
+        $next = $begin->getNextNotEmpty();
+        $this->assertNull($next);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected token type to be T_ECHO, got end of file.');
+        $begin->getNextNotEmpty(T_ECHO);
     }
 }

@@ -9,22 +9,31 @@ class Token
 {
     const NAME_OF_TYPES = [
         self::TYPE_CONCAT => 'TYPE_CONCAT',
+        self::TYPE_COMMA => 'TYPE_COMMA',
         self::TYPE_ENDING_SEMICOLON => 'TYPE_ENDING_SEMICOLON',
         self::TYPE_BRACKET_OPENING => 'TYPE_BRACKET_OPENING',
         self::TYPE_BRACKET_CLOSING => 'TYPE_BRACKET_CLOSING',
+        self::TYPE_PARENTHESIS_OPENING => 'TYPE_PARENTHESIS_OPENING',
+        self::TYPE_PARENTHESIS_CLOSING => 'TYPE_PARENTHESIS_CLOSING',
     ];
 
     const VALUE_OF_TYPES = [
         self::TYPE_CONCAT => '.',
+        self::TYPE_COMMA => ',',
         self::TYPE_ENDING_SEMICOLON => ';',
         self::TYPE_BRACKET_OPENING => '{',
         self::TYPE_BRACKET_CLOSING => '}',
+        self::TYPE_PARENTHESIS_OPENING => '(',
+        self::TYPE_PARENTHESIS_CLOSING => ')',
     ];
 
     const TYPE_CONCAT = 1000;
-    const TYPE_ENDING_SEMICOLON = 1001;
-    const TYPE_BRACKET_OPENING = 1002;
-    const TYPE_BRACKET_CLOSING = 1003;
+    const TYPE_COMMA = 1001;
+    const TYPE_ENDING_SEMICOLON = 1002;
+    const TYPE_BRACKET_OPENING = 1003;
+    const TYPE_BRACKET_CLOSING = 1004;
+    const TYPE_PARENTHESIS_OPENING = 1005;
+    const TYPE_PARENTHESIS_CLOSING = 1006;
 
     /**
      * Token type.
@@ -189,9 +198,16 @@ class Token
     /**
      * Returns the previous token, or null if it's the first in list.
      */
-    public function getPrevious(): ?Token
+    public function getPrevious($type = null): ?Token
     {
-        return $this->previous;
+        $previous = $this->previous;
+        if (null !== $type && $previous) {
+            $previous->ensureType($type);
+        } elseif (null !== $type) {
+            throw new \InvalidArgumentException(sprintf('Expected token type to be %s, got end of file.', Token::getTypeNameFromInteger($type)));
+        }
+
+        return $previous;
     }
 
     /**
@@ -233,5 +249,47 @@ class Token
     public function setNext(?Token $next): void
     {
         $this->next = $next;
+    }
+
+    /**
+     * Returns the next token not being en empty one.
+     *
+     * @param int|int[] $type single or multiple type to ensure after empty tokens
+     */
+    public function getNextNotEmpty($type = null): ?Token
+    {
+        $next = $this->next;
+        while ($next && $next->isType([T_WHITESPACE, T_DOC_COMMENT])) {
+            $next = $next->getNext();
+        }
+
+        if (null !== $next && null !== $type) {
+            $next->ensureType($type);
+        } elseif (null !== $type) {
+            throw new \InvalidArgumentException(sprintf('Expected token type to be %s, got end of file.', Token::getTypeNameFromInteger($type)));
+        }
+
+        return $next;
+    }
+
+    /**
+     * Returns the previous token not being en empty one.
+     *
+     * @param int|int[] $type single or multiple type to ensure before empty tokens
+     */
+    public function getPreviousNotEmpty($type = null): ?Token
+    {
+        $previous = $this->previous;
+        while ($previous && $previous->isType([T_WHITESPACE, T_DOC_COMMENT])) {
+            $previous = $previous->getPrevious();
+        }
+
+        if (null !== $previous && null !== $type) {
+            $previous->ensureType($type);
+        } elseif (null !== $type) {
+            throw new \InvalidArgumentException(sprintf('Expected token type to be %s, got beginning of file.', Token::getTypeNameFromInteger($type)));
+        }
+
+        return $previous;
     }
 }
